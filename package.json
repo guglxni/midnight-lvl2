@@ -3,12 +3,44 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Midnight Builder Challenge Level 1 counter contract",
+  "description": "Midnight Builder Challenge counter: Compact contract and Lace browser dApp",
   "scripts": {
     "compile": "compact compile contracts/counter.compact managed/counter",
-    "test": "node --experimental-strip-types --test tests/counter.test.ts"
+    "test": "node --experimental-strip-types --test tests/counter.test.ts",
+    "copy-zk": "node scripts/copy-zk-artifacts.mjs",
+    "predev": "node scripts/copy-zk-artifacts.mjs",
+    "prebuild": "node scripts/copy-zk-artifacts.mjs",
+    "dev": "vite",
+    "build": "tsc -p tsconfig.app.json --noEmit && vite build",
+    "preview": "vite preview"
   },
   "engines": {
     "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/compact-runtime": "0.16.0",
+    "@midnight-ntwrk/dapp-connector-api": "4.0.1",
+    "@midnight-ntwrk/midnight-js-contracts": "4.1.1",
+    "@midnight-ntwrk/midnight-js-dapp-connector-proof-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-fetch-zk-config-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-indexer-public-data-provider": "4.1.1",
+    "@midnight-ntwrk/midnight-js-network-id": "4.1.1",
+    "@midnight-ntwrk/midnight-js-protocol": "4.1.1",
+    "@midnight-ntwrk/midnight-js-types": "4.1.1",
+    "@midnight-ntwrk/midnight-js-utils": "4.1.1",
+    "buffer": "^6.0.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "rxjs": "^7.8.2",
+    "semver": "^7.7.4"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/semver": "^7.7.1",
+    "@vitejs/plugin-react": "^5.1.4",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1",
+    "vite-plugin-wasm": "^3.5.0"
   }
 }

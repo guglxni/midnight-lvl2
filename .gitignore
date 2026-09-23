@@ -1,6 +1,12 @@
 node_modules
 node_modules/
 mn-demo/node_modules/
+dist/
+.vite/
+.vercel
+public/keys/
+public/zkir/
+mn-demo/.deploy-preprod.log
 .cursorindexingignore
 mn-demo/.midnight-state.json
 mn-demo/.wallet-recovery-phrase.txt
