@@ -1,0 +1,14 @@
+{
+  "name": "midnight-counter",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Midnight Builder Challenge Level 1 counter contract",
+  "scripts": {
+    "compile": "compact compile contracts/counter.compact managed/counter",
+    "test": "node --experimental-strip-types --test tests/counter.test.ts"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}

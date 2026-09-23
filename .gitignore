@@ -1,0 +1,15 @@
+node_modules/
+mn-demo/node_modules/
+mn-demo/.midnight-state.json
+mn-demo/.wallet-recovery-phrase.txt
+mn-demo/.midnight-wallet-state/
+mn-demo/midnight-level-db/
+mn-demo/contracts/managed/
+.env
+.env.*
+*.seed
+.DS_Store
+Thumbs.db
+.specstory/
+graphify-out/
+.cursor/
