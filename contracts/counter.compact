@@ -1,0 +1,29 @@
+pragma language_version >= 0.23;
+
+import CompactStandardLibrary;
+
+// PUBLIC vs PRIVATE
+//
+// Public ledger state is stored on chain and readable by anyone. This contract's
+// only public field is `count`, the running total.
+//
+// Circuit arguments and values returned by witnesses are private by default.
+// They stay inside the zero-knowledge proof unless wrapped in disclose().
+//
+// `userSecret` is a private witness: the caller proves they know a non-empty
+// 32-byte secret. That secret is never written to the ledger and never returned.
+// disclose() is applied only to the increment amount, which is the sole private
+// value published. The ledger then stores the updated public count.
+
+export ledger count: Counter;
+
+// Off-chain secret supplied by the caller. An all-zero secret is rejected.
+witness userSecret(): Bytes<32>;
+
+export circuit increment(amount: Uint<16>): [] {
+  const secret = userSecret();
+  assert(secret != default<Bytes<32>>, "empty witness rejected");
+  assert(amount > 0, "increment must be positive");
+  // Publish only the increment. The secret stays private.
+  count += disclose(amount);
+}
