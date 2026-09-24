@@ -13,13 +13,13 @@ npx vercel --prod --yes
 
 The first command creates a preview deployment. The second promotes the same project to production. Vercel should use Node.js 22. The build runs `npm run build`, which copies the circuit keys into `dist/keys` and `dist/zkir` before Vite emits the SPA. `vercel.json` rewrites unknown paths to `index.html` and leaves `/keys` and `/zkir` as static files.
 
-Set `VITE_CONTRACT_ADDRESS` in the Vercel project to the Preprod contract address once that deploy exists, then run `npx vercel --prod --yes` again. Until then the page loads and tells you the address is unset.
+Set `VITE_CONTRACT_ADDRESS` in the Vercel project to the Preprod contract address, then run `npx vercel --prod --yes` again so the production build inlines it.
 
 ## Contract Address
 | Network | Address |
 | --- | --- |
 | Preview | d6cf72b510465c68466558986cada4b25c9603b3a2000cc695fe1a1c126a14db |
-| Preprod | Deploy is waiting on faucet funding. Fund `mn_addr_preprod1kmgk06k37epdqudy7ea0n6ux9529r0sxnjtgplvznwav4gykcutq89hsgw` at https://midnight-tmnight-preprod.nethermind.dev and rerun the Preprod deploy below. |
+| Preprod | 3e8c15276105da72c45bfc8044d03cc083ed378c8702c42f8bd0b4eb58529804 |
 
 The Preview row is the Level 1 counter, not the earlier hello-world scaffold (`d2a845490e973a0c5a6a798bf9c096c220ad30a6e89d412223bf127d61d5e3fc`). The Preprod wallet was created for this repository. Its recovery phrase is only in `mn-demo/.wallet-recovery-phrase.txt`, which is gitignored. Do not commit that file or `.midnight-state.json`.
 

@@ -110,6 +110,10 @@ export async function createWallet(opts: CreateWalletOptions): Promise<WalletCon
       indexerHttpUrl: opts.networkConfig.indexer,
       indexerWsUrl: opts.networkConfig.indexerWS,
     },
+    // Default batches of 10 trip ledger WASM on Preprod catch-up (wallet-sdk
+    // issue 425) and the 4ms inter-batch gap lets the shielded/dust streams
+    // sit idle. Larger batches keep replay CPU-bound so sync can finish.
+    batchUpdates: { size: 5_000, timeout: 1, spacing: 0 },
     provingServerUrl: new URL(opts.networkConfig.proofServer),
     relayURL: new URL(opts.networkConfig.node.replace(/^http/, 'ws')),
     txHistoryStorage: new NoOpTransactionHistoryStorage(),

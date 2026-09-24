@@ -148,6 +148,66 @@ async function createProviders(walletCtx: WalletContext) {
   };
 }
 
+// waitForSyncedState never rejects: the SDK logs Wallet.Sync and retries the
+// indexer subscription forever. A healthy catch-up keeps the event loop busy
+// and the applied indexes moving. An idle retry (0% CPU, indexes frozen) used
+// to sit here for hours, so give up once progress stops while the loop is free.
+const SYNC_STALL_MS = 3 * 60 * 1000;
+
+function waitForSyncedOrStall(wallet: WalletContext['wallet']) {
+  const started = Date.now();
+  let lastMove = started;
+  let lastTick = started;
+  let lastKey = '';
+  let latest = 'waiting for wallet state';
+
+  return new Promise<Awaited<ReturnType<WalletContext['wallet']['waitForSyncedState']>>>((resolve, reject) => {
+    let settled = false;
+    let timer: ReturnType<typeof setInterval> | undefined;
+    const finish = (fn: () => void) => {
+      if (settled) return;
+      settled = true;
+      if (timer) clearInterval(timer);
+      sub.unsubscribe();
+      fn();
+    };
+    const sub = wallet.state().subscribe({
+      next: (s) => {
+        const sh = s.shielded.state.progress;
+        const du = s.dust.state.progress;
+        const unshieldedDone = s.unshielded.progress.isStrictlyComplete();
+        const key = `${sh.appliedIndex}:${du.appliedIndex}:${unshieldedDone}`;
+        latest =
+          `shielded ${sh.appliedIndex}/${sh.highestRelevantWalletIndex}` +
+          ` dust ${du.appliedIndex}/${du.highestRelevantWalletIndex}` +
+          ` unshielded ${unshieldedDone ? 'synced' : 'behind'}`;
+        if (key !== lastKey) {
+          lastKey = key;
+          lastMove = Date.now();
+        }
+        if (s.isSynced) finish(() => resolve(s));
+      },
+      error: (err) => finish(() => reject(err instanceof Error ? err : new Error(String(err)))),
+    });
+    if (settled) return;
+    timer = setInterval(() => {
+      const now = Date.now();
+      const tickGap = now - lastTick;
+      lastTick = now;
+      const elapsed = Math.round((now - started) / 1000);
+      process.stdout.write(`\r  ⏳ Still syncing... (${elapsed}s) ${latest}   `);
+      // A long gap means replay blocked the event loop. That is progress, not a stall.
+      if (tickGap > 15_000) lastMove = now;
+      if (now - lastMove >= SYNC_STALL_MS) {
+        finish(() => reject(new Error(
+          `Wallet sync stalled for ${SYNC_STALL_MS / 1000}s with no shielded/dust/unshielded progress (${latest}). ` +
+            'The indexer subscription is failing and waitForSyncedState will not resolve on its own.',
+        )));
+      }
+    }, 5000);
+  });
+}
+
 // ─── Main ──────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -168,13 +228,7 @@ async function main() {
   console.log('  Syncing with network...');
   console.log('  ℹ  This may take several minutes depending on network size.');
   console.log('     RPC disconnection messages during sync are normal and can be safely ignored.\n');
-  const syncStart = Date.now();
-  const syncInterval = setInterval(() => {
-    const elapsed = Math.round((Date.now() - syncStart) / 1000);
-    process.stdout.write(`\r  ⏳ Still syncing... (${elapsed}s elapsed)   `);
-  }, 5000);
-  const state = await walletCtx.wallet.waitForSyncedState();
-  clearInterval(syncInterval);
+  const state = await waitForSyncedOrStall(walletCtx.wallet);
   process.stdout.write('\r  ✓ Synced with network.                                      \n');
 
   // Persist sync state now so a later deploy failure doesn't waste the sync work.
